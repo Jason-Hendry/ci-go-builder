@@ -1,6 +1,6 @@
 FROM alpine:3.6
 WORKDIR /go/src/app
-RUN apk add --update --no-cache --virtual .fetch-deps \
+RUN apk add --update --no-cache \
     ca-certificates \
     tzdata \
     git \
@@ -9,9 +9,9 @@ RUN apk add --update --no-cache --virtual .fetch-deps \
     tar \
     && \
     curl -o go1.9.1.linux-amd64.tar.gz https://storage.googleapis.com/golang/go1.9.1.linux-amd64.tar.gz && \
-    tar -C /usr/local -xzf go1.9.1.linux-amd64.tar.gz
+    tar -C /usr/local -xzf go1.9.1.linux-amd64.tar.gz; rm go1.9.1.linux-amd64.tar.gz
 
-ENV PATH="/usr/local/go/bin:${PATH}"
+ENV PATH="/usr/local/go/bin:/usr/local/bin/:${PATH}"
 ENV GOPATH="/go"
 ENV DOCKER_CHANNEL stable
 ENV DOCKER_VERSION 17.09.0-ce
@@ -47,12 +47,10 @@ RUN set -ex; \
 	; \
 	rm docker.tgz; \
 	\
-	apk del .fetch-deps; \
-	\
 	dockerd -v; \
-	docker -v
+	docker -v; mkdir -p /usr/local/bin \
 
 COPY docker-entrypoint.sh /usr/local/bin/
-
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["sh"]
